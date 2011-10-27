@@ -1,17 +1,8 @@
 #include "SDL.h"
 #include "defs.h"
+#include "draw.h"
 #include <stdio.h>
 #include <stdlib.h>
-
-#if BYTE_ORDER == BIG_ENDIAN
-#define RSHIFT 8
-#define GSHIFT 16
-#define BSHIFT 24
-#else
-#define RSHIFT 16
-#define GSHIFT 8
-#define BSHIFT 0
-#endif
 
 __attribute__((noreturn))
 static void sdlerr(const char *s)
@@ -33,6 +24,8 @@ int main(int argc, char *argv[])
 {
     SDL_Surface *vid;
     SDL_PixelFormat *f;
+    double t;
+    unsigned reftime;
 
     (void) argc;
     (void) argv;
@@ -60,6 +53,23 @@ int main(int argc, char *argv[])
             "pixel format: %08x %08x %08x\n",
             f->Rmask, f->Gmask, f->Bmask);
         fail("unsupported pixel format");
+    }
+
+    reftime = SDL_GetTicks();
+    while (1) {
+        t = 0.001 * (SDL_GetTicks() - reftime);
+        if (t > 5)
+            break;
+        SDL_LockSurface(vid);
+        video_ptr = vid->pixels;
+        video_width = vid->w;
+        video_height = vid->h;
+        video_rowbytes = vid->pitch;
+        memset(video_ptr, 0, video_height * video_rowbytes);
+        draw_rect(10, 20, (video_width - 20) * (t * (1/5.0)), 5,
+                  rgb(255, 32, 32));
+        SDL_UpdateRect(vid, 0, 0, video_width, video_height);
+        SDL_UnlockSurface(vid);
     }
 
     SDL_Quit();

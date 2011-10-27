@@ -23,4 +23,6 @@ env.ParseConfig('sdl-config --libs')
 
 env.Program('raycast', [
     sdlenv.Object('main.c'),
+    'draw.c',
+    'draw_rect.c',
 ])
