@@ -1,11 +1,31 @@
 #include "SDL.h"
+#include "defs.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+#if BYTE_ORDER == BIG_ENDIAN
+#define RSHIFT 8
+#define GSHIFT 16
+#define BSHIFT 24
+#else
+#define RSHIFT 16
+#define GSHIFT 8
+#define BSHIFT 0
+#endif
 
 __attribute__((noreturn))
 static void sdlerr(const char *s)
 {
     fprintf(stderr, "error: %s: %s\n", s, SDL_GetError());
+    SDL_Quit();
+    exit(1);
+}
+
+__attribute__((noreturn))
+static void fail(const char *s)
+{
+    fprintf(stderr, "error: %s\n", s);
+    SDL_Quit();
     exit(1);
 }
 
@@ -25,17 +45,22 @@ int main(int argc, char *argv[])
         sdlerr("SDL_SetVideoMode");
 
     f = vid->format;
-    printf(
-        "bits pp: %d\n"
-        "bytes pp: %d\n"
-        "loss: %d %d %d %d\n"
-        "shift: %d %d %d %d\n"
-        "mask: %08x %08x %08x %08x\n",
-        f->BitsPerPixel,
-        f->BytesPerPixel,
-        f->Rloss, f->Gloss, f->Bloss, f->Aloss,
-        f->Rshift, f->Gshift, f->Bshift, f->Ashift,
-        f->Rmask, f->Gmask, f->Bmask, f->Amask);
+    if (f->BitsPerPixel != 32 || f->BytesPerPixel != 4 ||
+        f->Rloss || f->Gloss || f->Bloss ||
+        f->Rshift != RSHIFT ||
+        f->Gshift != GSHIFT ||
+        f->Bshift != BSHIFT ||
+        f->Rmask != (0xffu << RSHIFT) ||
+        f->Gmask != (0xffu << GSHIFT) ||
+        f->Bmask != (0xffu << BSHIFT))
+    {
+        printf("Byte order: %d\n", BYTE_ORDER);
+        fprintf(
+            stderr,
+            "pixel format: %08x %08x %08x\n",
+            f->Rmask, f->Gmask, f->Bmask);
+        fail("unsupported pixel format");
+    }
 
     SDL_Quit();
     return 0;
