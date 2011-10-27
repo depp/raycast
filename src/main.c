@@ -166,7 +166,8 @@ int main(int argc, char *argv[])
             int x = u * (video_width / (2*w)) + video_width / 2;
             if (sz < 2)
                 sz = 2;
-            draw_rect(x - sz/2, video_height/2 -sz/2, sz, sz, dots[i].c);
+            draw_rect(x - sz/2, video_height/2 -sz*2, sz, sz, dots[i].c);
+            draw_rect(x - sz/2, video_height/2 +sz, sz, sz, dots[i].c);
         }
 
         draw_rect(10, 20, (video_width - 20) * (fmod(t, TIME) * (1.0/TIME)), 5,
