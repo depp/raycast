@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
         memset(video_ptr, 0, video_height * video_rowbytes);
         draw_rect(10, 20, (video_width - 20) * (t * (1/5.0)), 5,
                   rgb(255, 32, 32));
-        SDL_UpdateRect(vid, 0, 0, video_width, video_height);
+        SDL_UpdateRect(vid, 0, 0, 0, 0);
         SDL_UnlockSurface(vid);
     }
 
