@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 {
     SDL_Surface *vid;
     SDL_PixelFormat *f;
-    double t, lt, dt;
+    double t = 0, lt, dt;
     unsigned reftime;
     SDL_Event e;
     int kval, i;
