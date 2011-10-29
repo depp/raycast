@@ -25,4 +25,6 @@ env.Program('raycast', [
     sdlenv.Object('main.c'),
     'draw.c',
     'draw_rect.c',
+    'imath.c',
+    'level.c',
 ])

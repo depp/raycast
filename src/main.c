@@ -1,6 +1,7 @@
 #include "SDL.h"
 #include "defs.h"
 #include "draw.h"
+#include "level.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -154,6 +155,8 @@ int main(int argc, char *argv[])
         video_rowbytes = vid->pitch;
 
         memset(video_ptr, 0, video_height * video_rowbytes);
+
+        level_draw(px, py, pa * (65536.0 / (8 * atan(1))));
 
         float dx = cosf(pa), dy = sinf(pa);
         for (i = 0; i < 4; ++i) {
