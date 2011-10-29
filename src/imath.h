@@ -1,0 +1,1 @@
+int isin(int x);
