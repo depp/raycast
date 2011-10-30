@@ -31,11 +31,6 @@ static void fail(const char *s)
     exit(1);
 }
 
-struct dot {
-    int x, y;
-    unsigned c;
-};
-
 enum {
     KLEFT,
     KRIGHT,
@@ -50,24 +45,10 @@ int main(int argc, char *argv[])
     double t = 0, lt, dt;
     unsigned reftime;
     SDL_Event e;
-    int kval, i;
+    int kval;
 
-    struct dot dots[4];
     float px = 0, py = 0, pa = 0;
     unsigned keys = 0;
-
-    dots[0].x = -256;
-    dots[0].y = -256;
-    dots[0].c = rgb(255, 32, 32);
-    dots[1].x = 256;
-    dots[1].y = -256;
-    dots[1].c = rgb(220, 220, 0);
-    dots[2].x = -256;
-    dots[2].y = 256;
-    dots[2].c = rgb(64, 40, 255);
-    dots[3].x = 256;
-    dots[3].y = 256;
-    dots[3].c = rgb(10, 200, 30);
 
     (void) argc;
     (void) argv;
@@ -157,21 +138,6 @@ int main(int argc, char *argv[])
         memset(video_ptr, 0, video_height * video_rowbytes);
 
         level_draw(px, py, pa * (65536.0 / (8 * atan(1))));
-
-        float dx = cosf(pa), dy = sinf(pa);
-        for (i = 0; i < 4; ++i) {
-            float ix = dots[i].x - px, iy = dots[i].y - py;
-            float w = ix * dx + iy * dy;
-            if (w < 1)
-                continue;
-            float u = ix * dy - iy * dx;
-            int sz = SIZE * (video_width / (2*w));
-            int x = u * (video_width / (2*w)) + video_width / 2;
-            if (sz < 2)
-                sz = 2;
-            draw_rect(x - sz/2, video_height/2 -sz*2, sz, sz, dots[i].c);
-            draw_rect(x - sz/2, video_height/2 +sz, sz, sz, dots[i].c);
-        }
 
         draw_rect(10, 20, (video_width - 20) * (fmod(t, TIME) * (1.0/TIME)), 5,
                   rgb(255, 32, 32));
