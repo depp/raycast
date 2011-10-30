@@ -49,76 +49,97 @@ static const unsigned char LEVEL[8][8] = {
 
 static void render(int x, int y, struct rc_column *cols)
 {
-    unsigned SBITS = 10, SWIDTH = 1 << SBITS,
-        w = video_width, *vp = video_ptr, vrb = video_rowbytes / 4,
+    int SBITS = 10, SWIDTH = 1 << SBITS;
+    unsigned vw = video_width, *vp = video_ptr, vrb = video_rowbytes / 4,
         vh = video_height, i;
     x <<= 4;
     y <<= 4;
     x += SWIDTH * 4;
     y += SWIDTH * 4;
     int cx0 = (x >> SBITS), cy0 = (y >> SBITS);
-    unsigned ox0 = x & (SWIDTH - 1), oy0 = y & (SWIDTH - 1);
-    for (i = 0; i < w; ++i) {
+    int ox0 = x & (SWIDTH - 1), oy0 = y & (SWIDTH - 1);
+    for (i = 0; i < vw; ++i) {
         unsigned *cp = vp + i;
-        int dx = cols[i].dx, dy = cols[i].dy;
-        int cx = cx0, cy = cy0;
-        unsigned udx, udy; /* Unsigned dx, dy */
-        unsigned m; /* Slope */
-        unsigned off, loff; /* Offset in cell on minor axis */
-        int ox, oy; /* Final offset within cell */
         unsigned c; /* Color */
-        if (cx < 0 || cy < 0 || cx >= 8 || cy >= 8)
+
+
+        if (cx0 < 1 || cy0 < 1 || cx0 >= 7 || cy0 >= 7)
             goto oob;
-        if (dx >= 0) {
-            if (dy >= 0) {
-                udx = dx, udy = dy;
-                if (udx >= udy) {
-                    m = (udy << 16) / udx;
-                    loff = oy0;
-                    off = loff + ((m * (SWIDTH - ox0)) >> 16);
-                    if (off >= SWIDTH) {
-                        off &= SWIDTH - 1;
-                        cy += 1;
-                        // if (cy == 8) goto miss;
-                        if (0 && LEVEL[cx][cy]) {
-                            oy = 0;
-                            ox = ox0 + (SWIDTH - off) * udx / udy;
-                            goto hit;
-                        }
+        /* To simplify the algorithm and avoid dividing by zero, we
+           identify the "major axis" and "minor axis".  Each
+           iteration, we move exactly one cell along the major axis
+           and at most one cell along the minor axis.  The "slope" is
+           the ratio of movement along the minor axis to the major
+           axis, and is therefore its magnitude is at most 1.0
+           (65536).  */
+
+        /* dx: delta x, adx: absolute delta x, sdx: sign delta x
+           cx: cell x, m: slope, off: minor axis offset,
+           ox: offset on X axis */
+        int dx, dy, adx, ady, sdx, sdy, cx, cy, m, off, ox, oy;
+        dx = cols[i].dx;
+        dy = cols[i].dy;
+        adx = dx >= 0 ? dx : -dx;
+        sdx = dx >= 0 ? 1 : -1;
+        ady = dy >= 0 ? dy : -dy;
+        sdy = dy >= 0 ? 1 : -1;
+        cx = cx0;
+        cy = cy0;
+        if (adx >= ady) {
+            c = rgb(64, 64, 96);
+            m = (dy << 16) / adx;
+            off = dx >= 0 ? SWIDTH - ox0 : ox0;
+            off = oy0 + ((m * off) >> 16);
+            while (1) {
+                if (off >> SBITS) {
+                    cy += sdy;
+                    if (LEVEL[cx][cy]) {
+                        if (dy >= 0)
+                            off -= SWIDTH;
+                        off = - off * dx / dy;
+                        if (dx >= 0)
+                            off += SWIDTH;
+                        ox = off;
+                        oy = dy >= 0 ? 0 : SWIDTH;
+                        goto hit;
                     }
-                    while (1) {
-                        cx += 1;
-                        // if (cx == 8) goto miss;
-                        if (cx == 7) {
-                            // LEVEL[cx][cy]
-                            ox = 0;
-                            oy = off;
-                            goto hit;
-                        }
-                        loff = off;
-                        off = loff + (m >> (16 - SBITS));
-                        if (off >= SWIDTH) {
-                            off &= SWIDTH - 1;
-                            cy += 1;
-                            // if (cy == 8) goto miss;
-                            if (0 && LEVEL[cx][cy]) {
-                                oy = 0;
-                                ox = (SWIDTH - off) * udx / udy;
-                                goto hit;
-                            }
-                        }
-                    }
-                } else {
-                    
+                    off &= SWIDTH - 1;
                 }
-            } else {
-                
+                cx += sdx;
+                if (LEVEL[cx][cy]) {
+                    ox = dx >= 0 ? 0 : SWIDTH;
+                    oy = off;
+                    goto hit;
+                }
+                off += m >> (16 - SBITS);
             }
         } else {
-            if (dy >= 0) {
-                
-            } else {
-                
+            c = rgb(96, 64, 96);
+            m = (dx << 16) / ady;
+            off = dy >= 0 ? SWIDTH - oy0 : oy0;
+            off = ox0 + ((m * off) >> 16);
+            while (1) {
+                if (off >> SBITS) {
+                    cx += sdx;
+                    if (LEVEL[cx][cy]) {
+                        if (dx >= 0)
+                            off -= SWIDTH;
+                        off = - off * dy / dx;
+                        if (dy >= 0)
+                            off += SWIDTH;
+                        oy = off;
+                        ox = dx >= 0 ? 0 : SWIDTH;
+                        goto hit;
+                    }
+                    off &= SWIDTH - 1;
+                }
+                cy += sdy;
+                if (LEVEL[cx][cy]) {
+                    oy = dy >= 0 ? 0 : SWIDTH;
+                    ox = off;
+                    goto hit;
+                }
+                off += m >> (16 - SBITS);
             }
         }
         c = rgb(32, 32, 32);
@@ -142,7 +163,9 @@ static void render(int x, int y, struct rc_column *cols)
 
     hit:
         {
-            unsigned c = rgb(64, 64, 64);
+            if (ox < -10 || ox >= SWIDTH + 10 ||
+                oy < -10 || oy >= SWIDTH + 10)
+                c = rgb(96, 96, 64);
             int hx = (cx << SBITS) + ox - x, hy = (cy << SBITS) + oy - y;
             int d = (cols[i].ax * hx + cols[i].ay * hy) >> 16;
             if (d < 10)
