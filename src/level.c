@@ -37,14 +37,14 @@ static void perspective(struct rc_column *cols, unsigned w,
 }
 
 static const unsigned char LEVEL[8][8] = {
-    { 1, 1, 1, 1, 1, 1, 1, 4 },
+    { 1, 1, 3, 3, 1, 1, 1, 4 },
+    { 2, 0, 0, 0, 0, 0, 0, 4 },
+    { 4, 0, 0, 0, 0, 0, 0, 4 },
+    { 2, 0, 0, 0, 0, 0, 0, 4 },
+    { 4, 0, 0, 0, 0, 0, 0, 2 },
     { 2, 0, 0, 0, 0, 0, 0, 4 },
     { 2, 0, 0, 0, 0, 0, 0, 4 },
-    { 2, 0, 0, 0, 0, 0, 0, 4 },
-    { 2, 0, 0, 0, 0, 0, 0, 4 },
-    { 2, 0, 0, 0, 0, 0, 0, 4 },
-    { 2, 0, 0, 0, 0, 0, 0, 4 },
-    { 2, 3, 3, 3, 3, 3, 3, 3 }
+    { 2, 3, 3, 3, 3, 1, 3, 3 }
 };
 
 static void render(int x, int y, struct rc_column *cols)
@@ -62,9 +62,11 @@ static void render(int x, int y, struct rc_column *cols)
         unsigned *cp = vp + i;
         unsigned c; /* Color */
 
+        if (cx0 < 1 || cy0 < 1 || cx0 >= 7 || cy0 >= 7) {
+            c = rgb(64, 64, 32);
+            goto solid;
+        }
 
-        if (cx0 < 1 || cy0 < 1 || cx0 >= 7 || cy0 >= 7)
-            goto oob;
         /* To simplify the algorithm and avoid dividing by zero, we
            identify the "major axis" and "minor axis".  Each
            iteration, we move exactly one cell along the major axis
@@ -86,7 +88,6 @@ static void render(int x, int y, struct rc_column *cols)
         cx = cx0;
         cy = cy0;
         if (adx >= ady) {
-            c = rgb(64, 64, 96);
             m = (dy << 16) / adx;
             off = dx >= 0 ? SWIDTH - ox0 : ox0;
             off = oy0 + ((m * off) >> 16);
@@ -114,7 +115,6 @@ static void render(int x, int y, struct rc_column *cols)
                 off += m >> (16 - SBITS);
             }
         } else {
-            c = rgb(96, 64, 96);
             m = (dx << 16) / ady;
             off = dy >= 0 ? SWIDTH - oy0 : oy0;
             off = ox0 + ((m * off) >> 16);
@@ -145,10 +145,6 @@ static void render(int x, int y, struct rc_column *cols)
         c = rgb(32, 32, 32);
         goto solid;
 
-    oob:
-        c = rgb(64, 64, 32);
-        goto solid;
-
     solid:
         {
             unsigned j;
@@ -157,19 +153,21 @@ static void render(int x, int y, struct rc_column *cols)
         }
         continue;
 
-    miss:
-        c = rgb(64, 32, 32);
-        goto solid;
-
     hit:
         {
-            if (ox < -10 || ox >= SWIDTH + 10 ||
-                oy < -10 || oy >= SWIDTH + 10)
-                c = rgb(96, 96, 64);
+            c = rgb(64, 64, 64);
+            switch (LEVEL[cx][cy]) {
+            case 1: c = rgb(255, 32, 32); break;
+            case 2: c = rgb(220, 220, 0); break;
+            case 3: c = rgb(64, 40, 255); break;
+            case 4: c = rgb(10, 200, 30); break;
+            }
             int hx = (cx << SBITS) + ox - x, hy = (cy << SBITS) + oy - y;
             int d = (cols[i].ax * hx + cols[i].ay * hy) >> 16;
-            if (d < 10)
-                goto miss;
+            if (d < 10) {
+                c = rgb(64, 32, 32);
+                goto solid;
+            }
             unsigned h = (240 * 256) / d;
             if (h > 240)
                 h = 240;
