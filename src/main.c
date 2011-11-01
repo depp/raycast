@@ -5,6 +5,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define TIME 5
 /* Radians / sec */
@@ -47,6 +48,10 @@ int main(int argc, char *argv[])
     SDL_Event e;
     int kval;
 
+    double perftime;
+    unsigned framecount;
+    clock_t c1, c2;
+
     float px = 0, py = 0, pa = 0;
     unsigned keys = 0;
 
@@ -79,6 +84,9 @@ int main(int argc, char *argv[])
     }
 
     reftime = SDL_GetTicks();
+    perftime = 0;
+    framecount = 0;
+    c1=  clock();
     while (1) {
         while (SDL_PollEvent(&e)) {
             switch (e.type) {
@@ -107,6 +115,17 @@ int main(int argc, char *argv[])
         lt = t;
         t = 0.001 * (SDL_GetTicks() - reftime);
         dt = t - lt;
+
+        if (t > perftime + 1.0) {
+            c2 = clock();
+            printf("%.1f fps, %.1f%% processor\n",
+                   framecount / (t - perftime),
+                   100 * (c2 - c1) / ((t - perftime) * CLOCKS_PER_SEC));
+            framecount = 0;
+            c1 = c2;
+            perftime = t;
+        }
+        framecount++;
 
         if (keys & (1u << KLEFT)) {
             if ((keys & (1u << KRIGHT)) == 0) {
