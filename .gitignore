@@ -1,0 +1,36 @@
+# Object and product wildcards
+*.a
+*.exe
+*.la
+*.lo
+*.o
+*.so
+*.tar.gz
+
+# Autotools
+.Tpo
+.deps
+.dirstamp
+.libs
+Makefile
+Makefile.in
+aclocal.m4
+autom4te.cache
+autoscan.log
+config.guess
+config.h
+config.h.in
+config.log
+config.status
+config.sub
+configure
+depcomp
+install-sh
+libtool
+ltmain.sh
+m4
+missing
+stamp-h1
+
+# Build directory
+build
