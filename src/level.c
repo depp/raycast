@@ -186,12 +186,19 @@ static void render(struct pixbuf *restrict buf,
 
         texture:
             {
-                unsigned tx = ((ox + oy) >> (SBITS - t->wbits)) &
-                    ((1u << t->wbits) - 1);
+                unsigned hb = t->hbits, wb = t->wbits;
+                unsigned tm = (1u << (hb + 16)) / (h * 2);
+                unsigned n = 0, count = wb > hb ? hb : wb;
+                while (tm > (2u << 15u) && n < count) {
+                    tm >>= 1;
+                    n += 1;
+                }
+                hb -= n;
+                wb -= n;
+                unsigned tx = ((ox + oy) >> (SBITS - wb)) & ((1u << wb) - 1);
                 unsigned ty = 0;
-                unsigned tm = (1 << (t->hbits + 16)) / (h * 2);
-                unsigned mask = (1 << t->hbits) - 1;
-                unsigned *tp = (unsigned *) t->pixels[0] + (tx << t->hbits);
+                unsigned mask = (1 << hb) - 1;
+                unsigned *tp = (unsigned *) t->pixels[n] + (tx << hb);
                 unsigned j;
                 if (h > 240) {
                     ty = tm * (h - 240);

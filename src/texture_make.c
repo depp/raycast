@@ -43,8 +43,8 @@ void texture_make(struct texture **tex, unsigned char *ptr,
     tsz = coff;
 
     if (flags & TEXTURE_COLOR) {
-        unsigned *tptr;
-        unsigned x, y, p;
+        unsigned *tptr, *tp2;
+        unsigned x, y, p, q0, q1, q2, q3, c1, c2;
         tptr = malloc(tsz * 4);
         if (!tptr)
             abort();
@@ -75,7 +75,30 @@ void texture_make(struct texture **tex, unsigned char *ptr,
             /* Zero remaining space */
         }
 
-        /* Calculate mip maps */
+        for (i = 1; i < mcount; ++i) {
+            tptr = tp->pixels[i-1];
+            tp2 = tp->pixels[i];
+            for (y = 0; y < (1u << (hb - i)); ++y) {
+                for (x = 0; x < (1u << (wb - i)); ++x) {
+                    q0 = tptr[(2*y+0)*(1u<<(wb+1-i))+2*x+0];
+                    q1 = tptr[(2*y+0)*(1u<<(wb+1-i))+2*x+1];
+                    q2 = tptr[(2*y+1)*(1u<<(wb+1-i))+2*x+0];
+                    q3 = tptr[(2*y+1)*(1u<<(wb+1-i))+2*x+1];
+                    c1 = 0x00800080 +
+                        ((q0 & 0xff00ff00) >> 2) +
+                        ((q1 & 0xff00ff00) >> 2) +
+                        ((q2 & 0xff00ff00) >> 2) +
+                        ((q3 & 0xff00ff00) >> 2);
+                    c2 = 0x00020002 +
+                        (q0 & 0x00ff00ff) +
+                        (q1 & 0x00ff00ff) +
+                        (q2 & 0x00ff00ff) +
+                        (q3 & 0x00ff00ff);
+                    tp2[y*(1u<<(wb-i))+x] =
+                        (c1 & 0xff00ff00) | ((c2 >> 2) & 0x00ff00ff);
+                }
+            }
+        }
     } else {
         unsigned char *tptr;
         unsigned x, y;
