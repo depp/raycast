@@ -58,7 +58,6 @@ void texture_load(struct texture **tex, const char *path)
         for (i = 0; i < 1; ++i)
             jptr[i] = jdata + cinfo.output_scanline * (rb + i);
         jpeg_read_scanlines(&cinfo, jptr, 1);
-        printf("%d\n", cinfo.output_scanline);
     }
 
     jpeg_finish_decompress(&cinfo);
