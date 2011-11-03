@@ -60,6 +60,13 @@ int icos(unsigned x)
     return isin(x + 0x4000);
 }
 
+unsigned ilog2(unsigned x)
+{
+    unsigned i;
+    for (i = 0; i < 32 && (1U << i) < x; ++i);
+    return i;
+}
+
 #if defined(ISIN_TEST)
 #include <stdio.h>
 #include <math.h>

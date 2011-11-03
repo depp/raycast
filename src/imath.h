@@ -7,4 +7,11 @@
 int isin(unsigned x);
 int icos(unsigned x);
 
+unsigned ilog2(unsigned x);
+
+static inline unsigned align(unsigned sz)
+{
+    return (sz + 15) & ~15;
+}
+
 #endif

@@ -2,6 +2,7 @@
 #include "defs.h"
 #include "draw.h"
 #include "level.h"
+#include "texture.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,8 +58,13 @@ int main(int argc, char *argv[])
 
     struct pixbuf buf;
 
+    struct texture *tex;
+    unsigned x, y;
+
     (void) argc;
     (void) argv;
+
+    texture_load(&tex, "brick.jpg");
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER))
         sdlerr("SDL_Init");
@@ -163,6 +169,11 @@ int main(int argc, char *argv[])
         draw_rect(&buf, 10, 20,
                   (buf.width - 20) * (fmod(t, TIME) * (1.0/TIME)), 5,
                   rgb(255, 32, 32));
+
+        for (y = 0; y < (1u << tex->wbits); ++y)
+            memcpy(buf.ptr + buf.row * y,
+                   (unsigned *) tex->pixels[0] + y * (1u << tex->hbits),
+                   4 * (1u << tex->hbits));
 
         SDL_UpdateRect(vid, 0, 0, 0, 0);
         SDL_UnlockSurface(vid);

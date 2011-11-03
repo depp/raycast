@@ -10,4 +10,5 @@ raycast_SOURCES = \
 	draw.h draw_rect.c \
 	imath.c imath.h \
 	level.c level.h \
-	main.c
+	main.c \
+	texture.h texture_jpeg.c texture_make.c
