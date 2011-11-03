@@ -2,6 +2,7 @@
 #include "defs.h"
 #include "imath.h"
 #include "draw.h"
+#include "texture.h"
 #include <stdlib.h>
 #include <assert.h>
 
@@ -157,12 +158,6 @@ static void render(struct pixbuf *restrict buf,
     hit:
         {
             c = rgb(64, 64, 64);
-            switch (LEVEL[cx][cy]) {
-            case 1: c = rgb(255, 32, 32); break;
-            case 2: c = rgb(220, 220, 0); break;
-            case 3: c = rgb(64, 40, 255); break;
-            case 4: c = rgb(10, 200, 30); break;
-            }
             int hx = (cx << SBITS) + ox - x, hy = (cy << SBITS) + oy - y;
             int d = (cols[i].ax * hx + cols[i].ay * hy) >> 16;
             if (d < 10) {
@@ -170,13 +165,45 @@ static void render(struct pixbuf *restrict buf,
                 goto solid;
             }
             unsigned h = (240 * 256) / d;
-            if (h > 240)
-                h = 240;
-            unsigned j;
-            for (j = vh/2-h; j < vh/2+h; ++j)
-                cp[vrb*j] = c;
+            struct texture *t;
+
+            switch (LEVEL[cx][cy]) {
+            case 1: c = rgb(255, 32, 32); goto color;
+            case 2: t = g_textures[0]; goto texture;
+            case 3: t = g_textures[1]; goto texture;
+            case 4: t = g_textures[2]; goto texture;
+            }
+
+        color:
+            {
+                if (h > 240)
+                    h = 240;
+                unsigned j;
+                for (j = vh/2-h; j < vh/2+h; ++j)
+                    cp[vrb*j] = c;
+                continue;
+            }
+
+        texture:
+            {
+                unsigned tx = ((ox + oy) >> (SBITS - t->wbits)) &
+                    ((1u << t->wbits) - 1);
+                unsigned ty = 0;
+                unsigned tm = (1 << (t->hbits + 16)) / (h * 2);
+                unsigned mask = (1 << t->hbits) - 1;
+                unsigned *tp = (unsigned *) t->pixels[0] + (tx << t->hbits);
+                unsigned j;
+                if (h > 240) {
+                    ty = tm * (h - 240);
+                    h = 240;
+                }
+                for (j = vh/2-h; j < vh/2+h; ++j) {
+                    cp[vrb*j] = tp[(ty >> 16) & mask];
+                    ty += tm;
+                }
+                continue;
+            }
         }
-        continue;
     }
 }
 
