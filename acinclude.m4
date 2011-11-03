@@ -7,7 +7,7 @@ AC_DEFUN([ENABLE_WARNINGS],[
   if test "x$enable_warnings" != xno ; then
     [WARNING_CFLAGS="-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes"]
     if test "x$enable_warnings" != xyes ; then
-      [WARNING_CFLAGS="$warning_cppflags $enable_warnings"]
+      [WARNING_CFLAGS="$WARNING_CFLAGS $enable_warnings"]
     fi
   fi
   AC_SUBST([WARNING_CFLAGS])
