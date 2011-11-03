@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+struct texture *g_textures[3];
+
 #define TIME 5
 /* Radians / sec */
 #define TURN 6
@@ -58,13 +60,12 @@ int main(int argc, char *argv[])
 
     struct pixbuf buf;
 
-    struct texture *tex;
-    unsigned x, y;
-
     (void) argc;
     (void) argv;
 
-    texture_load(&tex, "brick.jpg");
+    texture_load(&g_textures[0], "brick.jpg");
+    texture_load(&g_textures[1], "roughstone.jpg");
+    texture_load(&g_textures[2], "ivy.jpg");
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER))
         sdlerr("SDL_Init");
@@ -169,11 +170,6 @@ int main(int argc, char *argv[])
         draw_rect(&buf, 10, 20,
                   (buf.width - 20) * (fmod(t, TIME) * (1.0/TIME)), 5,
                   rgb(255, 32, 32));
-
-        for (y = 0; y < (1u << tex->wbits); ++y)
-            memcpy(buf.ptr + buf.row * y,
-                   (unsigned *) tex->pixels[0] + y * (1u << tex->hbits),
-                   4 * (1u << tex->hbits));
 
         SDL_UpdateRect(vid, 0, 0, 0, 0);
         SDL_UnlockSurface(vid);

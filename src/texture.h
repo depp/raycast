@@ -17,3 +17,5 @@ void texture_load(struct texture **tex, const char *path);
 
 void texture_make(struct texture **tex, unsigned char *ptr,
                   unsigned w, unsigned h, unsigned rb, unsigned flags);
+
+extern struct texture *g_textures[3];
