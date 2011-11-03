@@ -20,14 +20,17 @@ enum {
 #error No byte order
 #endif
 
-extern void *video_ptr;
-extern unsigned video_width, video_height, video_rowbytes;
+struct pixbuf {
+    unsigned *ptr;
+    unsigned width, height, row;
+};
 
 static inline unsigned rgb(unsigned r, unsigned g, unsigned b)
 {
     return (r << RSHIFT) | (g << GSHIFT) | (b << BSHIFT);
 }
 
-void draw_rect(int x, int y, int w, int h, unsigned color);
+void draw_rect(struct pixbuf *restrict buf, int x, int y, int w, int h,
+               unsigned color);
 
 #endif

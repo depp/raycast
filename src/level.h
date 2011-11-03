@@ -1,1 +1,4 @@
-void level_draw(int x, int y, unsigned angle);
+struct pixbuf;
+
+void level_draw(struct pixbuf *restrict buf,
+                int x, int y, unsigned angle);

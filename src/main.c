@@ -55,6 +55,8 @@ int main(int argc, char *argv[])
     float px = 0, py = 0, pa = 0;
     unsigned keys = 0;
 
+    struct pixbuf buf;
+
     (void) argc;
     (void) argv;
 
@@ -149,16 +151,17 @@ int main(int argc, char *argv[])
         }
 
         SDL_LockSurface(vid);
-        video_ptr = vid->pixels;
-        video_width = vid->w;
-        video_height = vid->h;
-        video_rowbytes = vid->pitch;
+        buf.ptr = vid->pixels;
+        buf.width = vid->w;
+        buf.height = vid->h;
+        buf.row = vid->pitch / 4;
 
-        memset(video_ptr, 0, video_height * video_rowbytes);
+        memset(buf.ptr, 0, buf.height * buf.row * 4);
 
-        level_draw(px, py, pa * (65536.0 / (8 * atan(1))));
+        level_draw(&buf, px, py, pa * (65536.0 / (8 * atan(1))));
 
-        draw_rect(10, 20, (video_width - 20) * (fmod(t, TIME) * (1.0/TIME)), 5,
+        draw_rect(&buf, 10, 20,
+                  (buf.width - 20) * (fmod(t, TIME) * (1.0/TIME)), 5,
                   rgb(255, 32, 32));
 
         SDL_UpdateRect(vid, 0, 0, 0, 0);

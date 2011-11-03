@@ -7,7 +7,7 @@ raycast_LDFLAGS = @SDL_LIBS@
 raycast_CFLAGS = @WARNING_CFLAGS@ @SDL_CFLAGS@
 raycast_SOURCES = \
 	defs.h \
-	draw.c draw.h draw_rect.c \
+	draw.h draw_rect.c \
 	imath.c imath.h \
 	level.c level.h \
 	main.c

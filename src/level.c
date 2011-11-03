@@ -47,11 +47,12 @@ static const unsigned char LEVEL[8][8] = {
     { 2, 3, 3, 3, 3, 1, 3, 3 }
 };
 
-static void render(int x, int y, struct rc_column *cols)
+static void render(struct pixbuf *restrict buf,
+                   int x, int y, struct rc_column *cols)
 {
     int SBITS = 10, SWIDTH = 1 << SBITS;
-    unsigned vw = video_width, *vp = video_ptr, vrb = video_rowbytes / 4,
-        vh = video_height, i;
+    unsigned vw = buf->width, *vp = buf->ptr, vrb = buf->row,
+        vh = buf->height, i;
     x <<= 4;
     y <<= 4;
     x += SWIDTH * 4;
@@ -179,14 +180,15 @@ static void render(int x, int y, struct rc_column *cols)
     }
 }
 
-void level_draw(int x, int y, unsigned angle)
+void level_draw(struct pixbuf *restrict buf,
+                int x, int y, unsigned angle)
 {
     struct rc_column *cols;
-    unsigned w = video_width;
+    unsigned w = buf->width;
     cols = malloc(sizeof(*cols) * w);
     assert(cols);
     perspective(cols, w, angle, 65536);
-    render(x, y, cols);
+    render(buf, x, y, cols);
     free(cols);
 }
 
