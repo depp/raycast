@@ -78,7 +78,7 @@ void texture_make(struct texture **tex, unsigned char *ptr,
         /* Calculate mip maps */
     } else {
         unsigned char *tptr;
-        unsigned x, y, p;
+        unsigned x, y;
         tptr = malloc(tsz);
         if (!tptr)
             abort();
