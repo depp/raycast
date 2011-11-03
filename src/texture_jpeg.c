@@ -13,7 +13,7 @@ void texture_load(struct texture **tex, const char *path)
     FILE *f;
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr jerr;
-    unsigned w, h, wb, hb, rb, i, flags = TEXTURE_COLUMN;
+    unsigned w, h, rb, i, flags = TEXTURE_COLUMN;
     unsigned char *jdata = NULL, *jptr[1];
 
     cinfo.err = jpeg_std_error(&jerr);
