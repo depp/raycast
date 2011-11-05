@@ -13,12 +13,12 @@ static const unsigned short SIN_TABLE[65] = {
     32768
 };
 
-int isin(unsigned x)
+int isin(int x)
 {
-    unsigned ABITS = 16, QBITS = 2, TBITS = 6,
+    int ABITS = 16, QBITS = 2, TBITS = 6,
         FBITS = ABITS - QBITS - TBITS,
         Q = 1 << TBITS, F = 1 << FBITS;
-    unsigned q = (x >> (ABITS - QBITS)) & 3,
+    int q = (x >> (ABITS - QBITS)) & 3,
         i = (x >> (ABITS - QBITS - TBITS)) & (Q - 1), j = x & (F - 1);
     int a1, a2;
 
@@ -44,10 +44,10 @@ int isin(unsigned x)
         break;
     }
 
-    return (int) (a1 * (F - j) + a2 * j + F) >> (FBITS + 1);
+    return (a1 * (F - j) + a2 * j + F) >> (FBITS + 1);
 }
 
-int icos(unsigned x)
+int icos(int x)
 {
     return isin(x + 0x4000);
 }
