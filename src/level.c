@@ -54,8 +54,6 @@ static void render(struct pixbuf *restrict buf,
     int SBITS = 10, SWIDTH = 1 << SBITS;
     unsigned vw = buf->width, *vp = buf->ptr, vrb = buf->row,
         vh = buf->height, i;
-    x <<= 4;
-    y <<= 4;
     x += SWIDTH * 4;
     y += SWIDTH * 4;
     int cx0 = (x >> SBITS), cy0 = (y >> SBITS);

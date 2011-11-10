@@ -3,7 +3,7 @@
 #include "draw.h"
 #include "level.h"
 #include "texture.h"
-#include <math.h>
+#include "world.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -11,11 +11,11 @@
 struct texture *g_textures[3];
 
 #define TIME 5
-/* Radians / sec */
-#define TURN 6
-/* Units / sec */
-#define FORWARD 150
-#define BACKWARD 150
+/* Units / tick */
+#define TURN 4000
+/* Units / tick */
+#define FORWARD 300
+#define BACKWARD 300
 
 #define SIZE 32
 
@@ -35,6 +35,18 @@ static void fail(const char *s)
     exit(1);
 }
 
+__attribute__((malloc))
+void *xmalloc(size_t sz)
+{
+    void *p;
+    if (!sz)
+        return NULL;
+    p = malloc(sz);
+    if (!p)
+        fail("out of memory");
+    return p;
+}
+
 enum {
     KLEFT,
     KRIGHT,
@@ -46,9 +58,14 @@ int main(int argc, char *argv[])
 {
     SDL_Surface *vid;
     SDL_PixelFormat *f;
+    SDL_Event e;
+    unsigned reftime, curtime, delta, i, keys = 0, kval;
+    int turn, speed;
+
+
+/*
     double t = 0, lt, dt;
     unsigned reftime;
-    SDL_Event e;
     int kval;
 
     double perftime;
@@ -57,8 +74,12 @@ int main(int argc, char *argv[])
 
     float px = 0, py = 0, pa = 0;
     unsigned keys = 0;
+*/
 
     struct pixbuf buf;
+
+    struct world *w;
+    struct obj *p;
 
     (void) argc;
     (void) argv;
@@ -92,10 +113,12 @@ int main(int argc, char *argv[])
         fail("unsupported pixel format");
     }
 
+    w = world_new();
+    p = &w->player;
     reftime = SDL_GetTicks();
-    perftime = 0;
-    framecount = 0;
-    c1=  clock();
+    // perftime = 0;
+    // framecount = 0;
+    // c1 = clock();
     while (1) {
         while (SDL_PollEvent(&e)) {
             switch (e.type) {
@@ -121,10 +144,40 @@ int main(int argc, char *argv[])
             }
         }
 
-        lt = t;
-        t = 0.001 * (SDL_GetTicks() - reftime);
-        dt = t - lt;
+        curtime = SDL_GetTicks();
+        delta = curtime - reftime;
+        if (delta > 64) {
+            if (delta > 1000) {
+                reftime = curtime;
+                delta = 0;
+            } else {
+                turn = 0;
+                if (keys & (1u << KLEFT)) {
+                    if ((keys & (1u << KRIGHT)) == 0)
+                        turn = TURN;
+                } else if (keys & (1u << KRIGHT)) {
+                    turn = -TURN;
+                }
 
+                speed = 0;
+                if (keys & (1u << KUP)) {
+                    if ((keys & (1u << KDOWN)) == 0)
+                        speed = FORWARD;
+                } else if (keys & (1u << KDOWN)) {
+                    speed = - BACKWARD;
+                }
+
+                p->speed = speed;
+                for (i = 0; i < delta / 64; ++i) {
+                    p->angle += turn;
+                    world_update(w);
+                }
+                delta &= 63;
+                reftime = curtime - delta;
+            }
+        }
+
+        /*
         if (t > perftime + 1.0) {
             c2 = clock();
             printf("%.1f fps, %.1f%% processor\n",
@@ -135,27 +188,7 @@ int main(int argc, char *argv[])
             perftime = t;
         }
         framecount++;
-
-        if (keys & (1u << KLEFT)) {
-            if ((keys & (1u << KRIGHT)) == 0) {
-                pa += TURN * dt;
-                if (pa > 8 * atanf(1))
-                    pa -= 8 * atanf(1);
-            }
-        } else if (keys & (1u << KRIGHT)) {
-            pa -= TURN * dt;
-            if (pa < 0)
-                pa = 8 * atanf(1);
-        }
-        if (keys & (1u << KUP)) {
-            if ((keys & (1u << KDOWN)) == 0) {
-                px += cosf(pa) * (FORWARD * dt);
-                py += sinf(pa) * (FORWARD * dt);
-            }
-        } else if (keys & (1u << KDOWN)) {
-            px -= cosf(pa) * (BACKWARD * dt);
-            py -= sinf(pa) * (BACKWARD * dt);
-        }
+        */
 
         SDL_LockSurface(vid);
         buf.ptr = vid->pixels;
@@ -165,11 +198,18 @@ int main(int argc, char *argv[])
 
         memset(buf.ptr, 0, buf.height * buf.row * 4);
 
-        level_draw(&buf, px, py, pa * (65536.0 / (8 * atan(1))));
+        {
+            int d = delta;
+            int x = p->x0 + ((p->x1 - p->x0) * d >> 6);
+            int y = p->y0 + ((p->y1 - p->y0) * d >> 6);
+            level_draw(&buf, x, y, p->angle);
+        }
 
+/*
         draw_rect(&buf, 10, 20,
                   (buf.width - 20) * (fmod(t, TIME) * (1.0/TIME)), 5,
                   rgb(255, 32, 32));
+*/
 
         SDL_UpdateRect(vid, 0, 0, 0, 0);
         SDL_UnlockSurface(vid);

@@ -1,5 +1,6 @@
 #ifndef DEFS_H
 #define DEFS_H
+#include <stddef.h>
 
 /* Define BIG_ENDIAN, LITTLE_ENDIAN, and BYTE_ORDER.  Tries to work on
    as many platforms as possible.  Usese the definitions from a
@@ -35,5 +36,8 @@
 #endif
 
 #endif
+
+__attribute__((malloc))
+void *xmalloc(size_t sz);
 
 #endif
