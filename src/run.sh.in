@@ -1,0 +1,12 @@
+#!@shell@
+# This script runs the game without installing it
+BUILDDIR="@abs_top_builddir@"
+SRCDIR="@abs_top_srcdir@"
+EXE="$BUILDDIR/src/raycast"
+if [ ! -x "$EXE" -a -f "$EXE" ]
+then
+    echo "Can't find executable, did you run make?" >&2
+    exit 1
+fi
+cd "$SRCDIR/data/texture"
+exec "$EXE"

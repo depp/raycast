@@ -6,6 +6,7 @@ AC_CONFIG_FILES([Makefile src/Makefile])
 AC_CONFIG_HEADERS([src/config.h])
 
 AC_PROG_CC_C99
+AC_PATH_PROGS([shell], [dash sh bash], [/bin/sh])
 
 AM_PATH_SDL(1.2.0, , AC_MSG_ERROR([SDL 1.2 is required.]))
 AC_SEARCH_LIBS([jpeg_start_decompress], [jpeg])

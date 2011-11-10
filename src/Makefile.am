@@ -3,6 +3,10 @@ ACLOCAL_AMFLAGS = -I m4
 
 bin_PROGRAMS = raycast
 
+EXTRA_DIST = run.sh.in
+CLEANFILES = run.sh
+noinst_SCRIPTS = run.sh
+
 raycast_LDFLAGS = @SDL_LIBS@
 raycast_CFLAGS = @WARNING_CFLAGS@ @SDL_CFLAGS@
 raycast_SOURCES = \
@@ -13,3 +17,12 @@ raycast_SOURCES = \
 	main.c \
 	texture.h texture_jpeg.c texture_make.c \
 	world.h world.c
+
+run.sh : $(srcdir)/run.sh.in Makefile
+	sed \
+		-e 's,@''abs_top_srcdir@,@abs_top_srcdir@,g' \
+		-e 's,@''abs_top_builddir@,@abs_top_builddir@,g' \
+		-e 's,@''shell@,@shell@,g' \
+		$(srcdir)/run.sh.in > $@.tmp
+	chmod +x $@.tmp
+	mv $@.tmp $@
