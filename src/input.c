@@ -1,8 +1,6 @@
 #include "input.h"
 #include <stdlib.h>
 
-#include <stdio.h>
-
 void in_axis_init(struct in_axis *a)
 {
     a->points = NULL;
@@ -26,14 +24,6 @@ int in_axis_get(struct in_axis *a, int time)
         return p[0].pos;
     else
         return 0;
-}
-
-static void in_axis_dump(struct in_axis *a)
-{
-    struct in_point *p = a->points;
-    unsigned i, n = a->pcount;
-    for (i = 0; i < n; ++i)
-        printf(" (%d %d %d)", p[i].time, p[i].pos, p[i].vel);
 }
 
 static struct in_point *in_axis_getnew(struct in_axis *a, int time)
@@ -82,16 +72,10 @@ void in_axis_setvel(struct in_axis *a, int time, int vel)
     }
     p = in_axis_getnew(a, time);
     p->vel = vel;
-    printf("set");
-    in_axis_dump(a);
-    putchar('\n');
 }
 
 void in_axis_advance(struct in_axis *a, int time)
 {
-    printf("advance %d", time);
-    in_axis_dump(a);
-    putchar('\n');
     struct in_point *p = a->points;
     unsigned i, j, n = a->pcount;
     for (i = 0; i < n && p[i].time <= time; ++i);
@@ -113,7 +97,4 @@ void in_axis_advance(struct in_axis *a, int time)
         p[0].time = 0;
     }
     a->pcount = n;
-    printf("advanced");
-    in_axis_dump(a);
-    putchar('\n');
 }

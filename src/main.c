@@ -207,7 +207,6 @@ int main(int argc, char *argv[])
             int x = p->x0 + ((p->x1 - p->x0) * d >> 6);
             int y = p->y0 + ((p->y1 - p->y0) * d >> 6);
             p->angle = in_axis_get(&angle, delta);
-            printf("get %d\n", p->angle);
             level_draw(&buf, x, y, p->angle >> 6);
         }
 
