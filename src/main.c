@@ -125,6 +125,7 @@ int main(int argc, char *argv[])
         curtime = SDL_GetTicks();
         delta = curtime - reftime;
         if (delta > 1000) {
+            puts("Lag");
             delta = lasttime - reftime;
             reftime = curtime - delta;
         }
@@ -162,7 +163,7 @@ int main(int argc, char *argv[])
         }
         in_axis_setvel(&angle, delta, turn);
 
-        if (delta > 64) {
+        if (delta >= 64) {
             speed = 0;
             if (keys & (1u << KUP)) {
                 if ((keys & (1u << KDOWN)) == 0)
@@ -172,11 +173,11 @@ int main(int argc, char *argv[])
             }
 
             p->speed = speed;
-            for (i = 0; 64 * i < delta; ++i) {
+            for (i = 0; 64 * (i + 1) <= delta; ++i) {
                 p->angle = in_axis_get(&angle, i * 64) >> 6;
                 world_update(w);
             }
-            in_axis_advance(&angle, 64 * (i - 1));
+            in_axis_advance(&angle, 64 * i);
             delta &= 63;
             reftime = curtime - delta;
         }
