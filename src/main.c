@@ -60,8 +60,9 @@ int main(int argc, char *argv[])
     SDL_Surface *vid;
     SDL_PixelFormat *f;
     SDL_Event e;
+    SDL_Joystick *joy;
     unsigned reftime, lasttime, curtime, delta, i, keys = 0, kval;
-    int turn, speed;
+    int turn, turn2 = 0, speed, speed2 = 0, strafe2 = 0, njoy, v;
     struct in_axis angle;
 
 /*
@@ -89,7 +90,7 @@ int main(int argc, char *argv[])
     texture_load(&g_textures[1], "roughstone.jpg");
     texture_load(&g_textures[2], "ivy.jpg");
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER))
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK))
         sdlerr("SDL_Init");
 
     vid = SDL_SetVideoMode(768, 480, 32, SDL_SWSURFACE);
@@ -112,6 +113,18 @@ int main(int argc, char *argv[])
             "pixel format: %08x %08x %08x\n",
             f->Rmask, f->Gmask, f->Bmask);
         fail("unsupported pixel format");
+    }
+
+    njoy = SDL_NumJoysticks();
+    if (!njoy) {
+        joy = 0;
+    } else {
+        joy = SDL_JoystickOpen(0);
+        printf("Name: %s\n", SDL_JoystickName(0));
+        printf("Number of Axes: %d\n", SDL_JoystickNumAxes(joy));
+        printf("Number of Buttons: %d\n", SDL_JoystickNumButtons(joy));
+        printf("Number of Balls: %d\n", SDL_JoystickNumBalls(joy));
+        turn2 = 0;
     }
 
     w = world_new();
@@ -151,6 +164,17 @@ int main(int argc, char *argv[])
                     keys &= ~(1u << kval);
             nokey:
                 break;
+
+            case SDL_JOYAXISMOTION:
+                v = -e.jaxis.value;
+                printf("joymotion %d %d\n", e.jaxis.axis, v);
+                switch (e.jaxis.axis) {
+                case 0: strafe2 = v * FORWARD >> 15; break; /* left x */
+                case 1: speed2  = v * FORWARD >> 15; break; /* left y */
+                case 2: turn2   = v * TURN    >> 15; break; /* right x */
+                case 3: break; /* right y */
+                }
+                break;
             }
         }
 
@@ -161,7 +185,7 @@ int main(int argc, char *argv[])
         } else if (keys & (1u << KRIGHT)) {
             turn = -TURN;
         }
-        in_axis_setvel(&angle, delta, turn);
+        in_axis_setvel(&angle, delta, turn + turn2);
 
         if (delta >= 64) {
             speed = 0;
@@ -172,7 +196,8 @@ int main(int argc, char *argv[])
                 speed = - BACKWARD;
             }
 
-            p->speed = speed;
+            p->speed = speed + speed2;
+            p->strafe = strafe2;
             for (i = 0; 64 * (i + 1) <= delta; ++i) {
                 p->angle = in_axis_get(&angle, i * 64) >> 6;
                 world_update(w);
