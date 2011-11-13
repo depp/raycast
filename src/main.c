@@ -116,16 +116,10 @@ int main(int argc, char *argv[])
     }
 
     njoy = SDL_NumJoysticks();
-    if (!njoy) {
-        joy = 0;
-    } else {
+    if (!njoy)
+        joy = NULL;
+    else
         joy = SDL_JoystickOpen(0);
-        printf("Name: %s\n", SDL_JoystickName(0));
-        printf("Number of Axes: %d\n", SDL_JoystickNumAxes(joy));
-        printf("Number of Buttons: %d\n", SDL_JoystickNumButtons(joy));
-        printf("Number of Balls: %d\n", SDL_JoystickNumBalls(joy));
-        turn2 = 0;
-    }
 
     w = world_new();
     p = &w->player;
@@ -167,7 +161,6 @@ int main(int argc, char *argv[])
 
             case SDL_JOYAXISMOTION:
                 v = -e.jaxis.value;
-                printf("joymotion %d %d\n", e.jaxis.axis, v);
                 switch (e.jaxis.axis) {
                 case 0: strafe2 = v * FORWARD >> 15; break; /* left x */
                 case 1: speed2  = v * FORWARD >> 15; break; /* left y */
