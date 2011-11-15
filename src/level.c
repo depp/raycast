@@ -48,6 +48,22 @@ static const unsigned char LEVEL[8][8] = {
     { 2, 3, 3, 3, 3, 1, 3, 3 }
 };
 
+static unsigned shade1(unsigned x, unsigned s)
+{
+    return (x * s * 0x101) >> 16;
+}
+
+static unsigned shade(unsigned x, unsigned s)
+{
+    unsigned r, g, b;
+    r = (x >> RSHIFT) & 0xff;
+    g = (x >> GSHIFT) & 0xff;
+    b = (x >> BSHIFT) & 0xff;
+    return (shade1(r, s) << RSHIFT)
+        | (shade1(g, s) << GSHIFT)
+        | (shade1(b, s) << BSHIFT);
+}
+
 static void render(struct pixbuf *restrict buf,
                    int x, int y, struct rc_column *cols)
 {
@@ -165,6 +181,14 @@ static void render(struct pixbuf *restrict buf,
             unsigned h = (240 * 256) / d;
             struct texture *t;
 
+            int d2 = (hx >> 2) * (hx >> 2) + (hy >> 2) * (hy >> 2);
+            int sh = d2 > 65536 ? (65536 * 255) / d2 : 255;
+
+            if (sh == 0) {
+                c = 0;
+                goto color;
+            }
+
             switch (LEVEL[cx][cy]) {
             case 1: c = rgb(255, 32, 32); goto color;
             case 2: t = g_textures[0]; goto texture;
@@ -174,6 +198,7 @@ static void render(struct pixbuf *restrict buf,
 
         color:
             {
+                c = shade(c, sh);
                 if (h > 240)
                     h = 240;
                 unsigned j;
@@ -202,9 +227,16 @@ static void render(struct pixbuf *restrict buf,
                     ty = tm * (h - 240);
                     h = 240;
                 }
-                for (j = vh/2-h; j < vh/2+h; ++j) {
-                    cp[vrb*j] = tp[(ty >> 16) & mask];
-                    ty += tm;
+                if (sh == 255) {
+                    for (j = vh/2-h; j < vh/2+h; ++j) {
+                        cp[vrb*j] = tp[(ty >> 16) & mask];
+                        ty += tm;
+                    }
+                } else {
+                    for (j = vh/2-h; j < vh/2+h; ++j) {
+                        cp[vrb*j] = shade(tp[(ty >> 16) & mask], sh);
+                        ty += tm;
+                    }
                 }
                 continue;
             }
