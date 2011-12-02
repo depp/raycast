@@ -7,8 +7,8 @@ EXTRA_DIST = run.sh.in
 CLEANFILES = run.sh
 noinst_SCRIPTS = run.sh
 
-raycast_LDFLAGS = @SDL_LIBS@
-raycast_CFLAGS = @WARNING_CFLAGS@ @SDL_CFLAGS@
+raycast_LDFLAGS = @SDL_LIBS@ @PANGOCAIRO_LIBS@
+raycast_CFLAGS = @WARNING_CFLAGS@ @SDL_CFLAGS@ @PANGOCAIRO_CFLAGS@
 raycast_SOURCES = \
 	defs.h \
 	draw.h draw_rect.c \
@@ -16,6 +16,7 @@ raycast_SOURCES = \
 	input.c input.h \
 	level.c level.h \
 	main.c \
+	text.h text.c \
 	texture.h texture_jpeg.c texture_make.c \
 	world.h world.c
 

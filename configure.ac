@@ -10,6 +10,8 @@ AC_PATH_PROGS([shell], [dash sh bash], [/bin/sh])
 
 AM_PATH_SDL(1.2.0, , AC_MSG_ERROR([SDL 1.2 is required.]))
 AC_SEARCH_LIBS([jpeg_start_decompress], [jpeg])
+PKG_PROG_PKG_CONFIG(0.16)
+PKG_CHECK_MODULES([PANGOCAIRO], [pangocairo])
 
 ENABLE_WARNINGS
 

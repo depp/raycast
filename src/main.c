@@ -3,6 +3,7 @@
 #include "draw.h"
 #include "input.h"
 #include "level.h"
+#include "text.h"
 #include "texture.h"
 #include "world.h"
 #include <stdio.h>
@@ -64,6 +65,9 @@ int main(int argc, char *argv[])
     unsigned reftime, lasttime, curtime, delta, i, keys = 0, kval;
     int turn, turn2 = 0, speed, speed2 = 0, strafe2 = 0, njoy, v;
     struct in_axis angle;
+
+    int frame = 0;
+    char frametext[16];
 
 /*
     double t = 0, lt, dt;
@@ -129,6 +133,8 @@ int main(int argc, char *argv[])
     // framecount = 0;
     // c1 = clock();
     while (1) {
+        frame += 1;
+
         curtime = SDL_GetTicks();
         delta = curtime - reftime;
         if (delta > 1000) {
@@ -228,6 +234,9 @@ int main(int argc, char *argv[])
             p->angle = in_axis_get(&angle, delta);
             level_draw(&buf, x, y, p->angle >> 6);
         }
+
+        snprintf(frametext, sizeof(frametext), "frame %d", frame);
+        text_draw(&buf, frametext, 10, 50);
 
 /*
         draw_rect(&buf, 10, 20,
