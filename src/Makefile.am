@@ -7,7 +7,7 @@ EXTRA_DIST = run.sh.in
 CLEANFILES = run.sh
 noinst_SCRIPTS = run.sh
 
-raycast_LDFLAGS = @SDL_LIBS@ @PANGOCAIRO_LIBS@
+raycast_LDADD = @SDL_LIBS@ @PANGOCAIRO_LIBS@
 raycast_CFLAGS = @WARNING_CFLAGS@ @SDL_CFLAGS@ @PANGOCAIRO_CFLAGS@
 raycast_SOURCES = \
 	defs.h \
